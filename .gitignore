@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+evidence/*.json
+!evidence/sample_run.json
+.pytest_cache/
+
+# Local working documents (not part of the published project)
+agent-identity-gateway-spec.md
+*Zone.Identifier
+DESIGN.md
+IMPLEMENTATION_PLAN.md
