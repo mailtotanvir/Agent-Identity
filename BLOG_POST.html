@@ -1,0 +1,1117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agents Going Rogue and Escaping Your Machines? Have You Tried Zero Trust AI Agents? | Tanvir</title>
+  <meta name="description" content="Why autonomous agents breaking sandboxes and colluding on message boards is an enterprise identity problem, and how Zero Trust IdP governance with Auth0 and Langfuse brings them under control.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #e9eef9;
+      --text-muted: #9aa8bf;
+      --text-dim: #64748b;
+      --paper: #080b12;
+      --card: #101722;
+      --card-hover: #141e2e;
+      --line: #222f42;
+      --line-subtle: #192333;
+      --cyan: #4fd6e0;
+      --forest: #46e39b;
+      --indigo: #6366f1;
+      --amber: #ffc46b;
+      --red: #ff6b6b;
+      --code-bg: #090e17;
+      --terminal-header: #131b29;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: 
+        radial-gradient(circle at 12% 0%, rgba(99, 102, 241, 0.16), transparent 32rem),
+        radial-gradient(circle at 88% 18%, rgba(79, 214, 224, 0.12), transparent 28rem),
+        radial-gradient(circle at 50% 60%, rgba(70, 227, 155, 0.05), transparent 40rem);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 17px;
+      line-height: 1.8;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell {
+      width: min(1080px, calc(100% - 44px));
+      margin: 0 auto;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+      transition: color 0.2s ease;
+    }
+    a:hover {
+      color: var(--forest);
+      text-decoration: underline;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 0;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+    nav a {
+      color: var(--text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    nav a:hover {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    header {
+      max-width: 960px;
+      padding: 85px 0 65px;
+    }
+
+    .eyebrow {
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+    .eyebrow::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--cyan);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: clamp(2.6rem, 5.8vw, 4.8rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.04em;
+      margin-bottom: 24px;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 50%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .lede {
+      max-width: 860px;
+      color: #c5cede;
+      font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+      line-height: 1.6;
+      font-weight: 400;
+      letter-spacing: -0.01em;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 48px;
+    }
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(16, 23, 34, 0.85);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: 22px 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .stat:hover {
+      transform: translateY(-2px);
+      border-color: rgba(79, 214, 224, 0.3);
+    }
+    .stat strong {
+      display: block;
+      color: var(--forest);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 2.1rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+    .stat span {
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-weight: 500;
+      line-height: 1.4;
+      display: block;
+    }
+
+    article {
+      width: min(860px, 100%);
+      margin: 0 auto;
+      padding-bottom: 120px;
+    }
+
+    section {
+      margin: 80px 0;
+    }
+
+    h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.035em;
+      margin-bottom: 22px;
+      color: #ffffff;
+    }
+
+    h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      margin: 36px 0 14px;
+      color: #f1f5f9;
+    }
+
+    p {
+      color: #bcc6d7;
+      margin-bottom: 20px;
+      font-size: 1.05rem;
+    }
+
+    ul, ol {
+      color: #bcc6d7;
+      padding-left: 24px;
+      margin-bottom: 24px;
+    }
+    li {
+      margin-bottom: 10px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(16, 23, 34, 0.75);
+      backdrop-filter: blur(14px);
+      border-radius: 14px;
+      padding: 26px 30px;
+      margin: 28px 0;
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.2);
+    }
+
+    .callout {
+      border-left: 4px solid var(--amber);
+      background: rgba(25, 23, 16, 0.6);
+      padding: 20px 24px;
+      font-size: 1.12rem;
+      line-height: 1.6;
+    }
+    .callout.good {
+      border-left-color: var(--forest);
+      background: rgba(10, 31, 20, 0.55);
+    }
+    .callout.cyan {
+      border-left-color: var(--cyan);
+      background: rgba(10, 26, 32, 0.55);
+    }
+
+    .compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 30px 0;
+    }
+    .compare > div {
+      padding: 24px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--card);
+    }
+    .compare > div:first-child {
+      border-top: 4px solid var(--cyan);
+    }
+    .compare > div:last-child {
+      border-top: 4px solid var(--forest);
+    }
+    .compare h3 {
+      margin: 0 0 10px;
+      color: #ffffff;
+      font-size: 1.25rem;
+    }
+    .compare p {
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+    }
+    .compare ul {
+      padding-left: 18px;
+      margin-bottom: 0;
+      font-size: 0.92rem;
+    }
+
+    /* Diagram Styling */
+    .diagram-container {
+      margin: 36px 0;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #090e17;
+      padding: 24px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+      overflow-x: auto;
+    }
+    .diagram-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--cyan);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Terminal Window Mockup */
+    .terminal {
+      background: var(--code-bg);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 28px 0;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.4);
+    }
+    .terminal-header {
+      background: var(--terminal-header);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--line);
+    }
+    .terminal-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-red { background: #ff5f56; }
+    .dot-yellow { background: #ffbd2e; }
+    .dot-green { background: #27c93f; }
+    .terminal-title {
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 500;
+      margin-left: 10px;
+    }
+    .terminal-body {
+      padding: 20px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      line-height: 1.65;
+      overflow-x: auto;
+      color: #d1d5db;
+    }
+    .t-cyan { color: var(--cyan); }
+    .t-green { color: var(--forest); }
+    .t-yellow { color: var(--amber); }
+    .t-red { color: var(--red); }
+    .t-dim { color: var(--text-dim); }
+
+    /* Visual Evidence Dashboard */
+    .evidence-dashboard {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+    .evidence-card {
+      border: 1px solid var(--line);
+      background: var(--card);
+      border-radius: 14px;
+      padding: 24px;
+      position: relative;
+    }
+    .evidence-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line-subtle);
+    }
+    .evidence-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .badge-auth0 {
+      background: rgba(235, 84, 36, 0.15);
+      color: #ff7a59;
+      border: 1px solid rgba(235, 84, 36, 0.3);
+    }
+    .badge-langfuse {
+      background: rgba(79, 214, 224, 0.15);
+      color: var(--cyan);
+      border: 1px solid rgba(79, 214, 224, 0.3);
+    }
+    .badge-verdict {
+      background: rgba(70, 227, 155, 0.15);
+      color: var(--forest);
+      border: 1px solid rgba(70, 227, 155, 0.3);
+    }
+    .evidence-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .evidence-field {
+      margin-bottom: 12px;
+    }
+    .evidence-label {
+      display: block;
+      color: var(--text-dim);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .evidence-val {
+      color: #f1f5f9;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13.5px;
+      font-weight: 600;
+    }
+    .evidence-pipeline-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .pipeline-step-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #090e17;
+      border: 1px solid var(--line-subtle);
+      border-radius: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+    }
+    .step-name {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+    .step-cost {
+      color: var(--amber);
+    }
+
+    /* Tables */
+    .table-container {
+      overflow-x: auto;
+      margin: 28px 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: rgba(16, 23, 34, 0.7);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+    th, td {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: rgba(19, 27, 41, 0.85);
+    }
+    tr:last-child td {
+      border-bottom: none;
+    }
+    td strong {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.9em;
+      background: rgba(99, 102, 241, 0.12);
+      color: #93c5fd;
+      padding: 2px 7px;
+      border-radius: 5px;
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 12px 10px 0 0;
+      padding: 12px 22px;
+      border: 1px solid var(--forest);
+      border-radius: 10px;
+      background: var(--forest);
+      color: #05140e;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+    .button:hover {
+      background: #5ee7b7;
+      color: #05140e;
+      text-decoration: none;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(70, 227, 155, 0.25);
+    }
+    .button.secondary {
+      background: transparent;
+      border-color: var(--line);
+      color: var(--ink);
+    }
+    .button.secondary:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(79, 214, 224, 0.08);
+      box-shadow: none;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 48px 0 80px;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    footer a {
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 768px) {
+      .stats, .compare, .evidence-grid-2col { grid-template-columns: 1fr; }
+      header { padding-top: 55px; }
+      h1 { font-size: 2.3rem; }
+      .panel { padding: 20px; }
+      th, td { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <nav>
+      <a href="https://github.com/mailtotanvir/Agent-Identity">← Agent-Identity Repo</a>
+      <span>Tanvir • Enterprise Agentic Governance</span>
+      <a href="https://mailtotanvir.github.io/">All Publications ↗</a>
+    </nav>
+
+    <header>
+      <div class="eyebrow">Zero Trust Security &amp; Autonomous AI · September 2026</div>
+      <h1>Agents Going Rogue and Escaping Your Machines? Have You Tried Zero Trust AI Agents?</h1>
+      <p class="lede">
+        The headlines are loud: autonomous agents chatting on private message boards, breaking sandbox boundaries, and auto-executing unvetted commands. The industry is treating autonomous agents like digital ghosts. We already solved this exact security problem for human employees decades ago. It is time to apply Zero Trust identity to our new agentic workforce.
+      </p>
+
+      <div class="stats">
+        <div class="stat">
+          <strong>1</strong>
+          <span>First-class Auth0 M2M identity</span>
+        </div>
+        <div class="stat">
+          <strong>0</strong>
+          <span>Redeploys needed to approve or block</span>
+        </div>
+        <div class="stat">
+          <strong>$0.0003</strong>
+          <span>Per-run LLM cost bound to tenant audit</span>
+        </div>
+        <div class="stat">
+          <strong>1</strong>
+          <span>Unified evidence record per run</span>
+        </div>
+      </div>
+    </header>
+
+    <article>
+      <!-- SECTION 1: THE ROGUE AGENT HYPE VS REALITY -->
+      <section>
+        <h2>The rogue agent panic</h2>
+        <p>
+          Open social media or tech news right now, and you will find a wave of breathless panic about autonomous AI agents. Developers share stories of multi-agent swarms gossiping on private message protocols, agents colluding across channels, subagents attempting to break out of Docker sandboxes, and autonomous loops burning through thousands of dollars in minutes.
+        </p>
+        <p>
+          The instinct from many teams is either to pull the emergency plug or to wrap the agent in fragile, heuristic regex filters.
+        </p>
+        <p>
+          Both responses miss the real architectural failure. The problem is not that LLMs have agency. The problem is that we are deploying autonomous software with <strong>ambient, unowned, unmonitored credentials</strong>.
+        </p>
+
+        <div class="panel callout">
+          <strong>The fundamental paradox:</strong> When a human employee joins your engineering team, you do not hand them an unmetered, anonymous root API key and hope for the best. You issue them an identity in your enterprise IdP (Okta, Auth0, Entra ID). You enforce Least Privilege, role-based scopes, manager approvals, and continuous monitoring. If they exhibit anomalous behavior, their access is revoked in seconds.
+        </div>
+
+        <p>
+          Yet, when an AI agent is spun up (an autonomous entity capable of querying databases, refactoring repositories, reading customer records, and triggering downstream APIs), it gets treated like a stray shell script. It runs with an ambient API key sitting in plain text in a <code>.env</code> file.
+        </p>
+        <p>
+          If an agent acts with agency, executes tools, and consumes budget, it is not a script. It is an <strong>Agentic Employee</strong>. It needs the exact same Zero Trust identity architecture we give human employees.
+        </p>
+        <p>
+          This is the core problem Langfuse co-founder <strong>Mark Klingen</strong> spotlighted: how do corporate security teams approve personal agents, keep an authoritative audit log in Okta/Auth0, and immediately kill suspicious behavior?
+        </p>
+        <p>
+          <a href="https://github.com/mailtotanvir/Agent-Identity">Agent Identity Gateway</a> is a working, open-source reference implementation that proves how to do it.
+        </p>
+      </section>
+
+      <!-- SECTION 2: THE DUAL-LAYER THESIS -->
+      <section>
+        <h2>The dual-layer observability thesis</h2>
+        <p>
+          Security teams often think observability is just network logs. AI engineers think observability is just prompt traces. Both are blind to half the system.
+        </p>
+        <p>
+          To govern an autonomous agent, you must bind two distinct layers:
+        </p>
+
+        <div class="compare">
+          <div>
+            <h3>Layer 1: Identity Plane (Auth0)</h3>
+            <p>Proves <strong>WHO</strong> ran and under what enterprise authorization.</p>
+            <ul>
+              <li>Registered Machine-to-Machine (M2M) application in the IdP</li>
+              <li>Approval gate controlled by security admins in the IdP dashboard</li>
+              <li>Tenant audit log (<code>seccft</code>) recorded on every token grant</li>
+              <li>Downscoped, role-based OAuth 2.0 scopes</li>
+              <li>Instant grant revocation via the Management API</li>
+            </ul>
+          </div>
+          <div>
+            <h3>Layer 2: Execution Plane (Langfuse)</h3>
+            <p>Proves <strong>WHAT</strong> the agent did with that authorization.</p>
+            <ul>
+              <li>Node-by-node execution spans with precise latency</li>
+              <li>Every input prompt, system context, and model generation</li>
+              <li>Token counts (input, output, reasoning)</li>
+              <li>Exact per-step dollar cost tracking on Gemini / Vertex AI</li>
+              <li>Deep-linked trace URL for full post-run forensics</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel callout good">
+          <strong>Auth0 proves the agent authenticated with a valid identity and an approved scope. Langfuse proves what the agent did with that access, step by step, at what cost. Neither covers the full picture alone. Together they close the audit gap.</strong>
+        </div>
+      </section>
+
+      <!-- SECTION 3: ARCHITECTURE DIAGRAM -->
+      <section>
+        <h2>System architecture: Zero Trust fail-closed topology</h2>
+        <p>
+          The gateway is built on LangGraph as a deterministic state machine. Security approval is treated as a hard gate before any model computation begins:
+        </p>
+
+        <!-- VISUAL ARCHITECTURE DIAGRAM -->
+        <div class="diagram-container">
+          <div class="diagram-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+            Zero Trust Agent Identity &amp; Governance Topology
+          </div>
+          <svg viewBox="0 0 800 480" width="100%" height="100%" style="overflow: visible; font-family: 'JetBrains Mono', monospace;">
+            <defs>
+              <linearGradient id="gradGate" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2a200a" />
+                <stop offset="100%" stop-color="#161205" />
+              </linearGradient>
+              <linearGradient id="gradNode" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#141e2e" />
+                <stop offset="100%" stop-color="#0b111a" />
+              </linearGradient>
+              <linearGradient id="gradKill" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#2d1215" />
+                <stop offset="100%" stop-color="#15080a" />
+              </linearGradient>
+              <linearGradient id="gradSuccess" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0d281e" />
+                <stop offset="100%" stop-color="#05150f" />
+              </linearGradient>
+              <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+                <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.5"/>
+              </filter>
+            </defs>
+
+            <!-- Background boundary cards -->
+            <!-- Identity boundary -->
+            <rect x="20" y="20" width="220" height="440" rx="12" fill="#0d1522" stroke="#222f42" stroke-dasharray="4 4" />
+            <text x="35" y="46" fill="#4fd6e0" font-size="11" font-weight="700" letter-spacing="1">LAYER 1: AUTH0 IDP</text>
+
+            <!-- Execution pipeline boundary -->
+            <rect x="260" y="20" width="260" height="440" rx="12" fill="#0b121c" stroke="#222f42" />
+            <text x="275" y="46" fill="#93c5fd" font-size="11" font-weight="700" letter-spacing="1">LAYER 2: LANGGRAPH PIPELINE</text>
+
+            <!-- Observability & Evidence boundary -->
+            <rect x="540" y="20" width="240" height="440" rx="12" fill="#0c1722" stroke="#222f42" stroke-dasharray="4 4" />
+            <text x="555" y="46" fill="#46e39b" font-size="11" font-weight="700" letter-spacing="1">LAYER 3: AUDIT &amp; TRACE</text>
+
+            <!-- NODES IN PIPELINE -->
+            <!-- 1. Start / Authenticate -->
+            <g transform="translate(280, 70)" filter="url(#shadow)">
+              <rect width="220" height="52" rx="8" fill="url(#gradNode)" stroke="#4fd6e0" stroke-width="1.5" />
+              <text x="110" y="24" fill="#ffffff" font-size="12" font-weight="700" text-anchor="middle">1. authenticate</text>
+              <text x="110" y="40" fill="#94a3b8" font-size="10" text-anchor="middle">OAuth 2.0 Client Credentials</text>
+            </g>
+
+            <!-- 2. Approval Gate -->
+            <g transform="translate(280, 155)" filter="url(#shadow)">
+              <rect width="220" height="60" rx="8" fill="url(#gradGate)" stroke="#ffc46b" stroke-width="2" />
+              <text x="110" y="25" fill="#ffc46b" font-size="12" font-weight="700" text-anchor="middle">2. approval_gate</text>
+              <text x="110" y="44" fill="#e2e8f0" font-size="10" text-anchor="middle">client_metadata.security_approved</text>
+            </g>
+
+            <!-- LLM Nodes Cluster -->
+            <g transform="translate(280, 245)" filter="url(#shadow)">
+              <rect width="220" height="110" rx="8" fill="url(#gradNode)" stroke="#6366f1" stroke-width="1.5" />
+              <text x="110" y="24" fill="#a5b4fc" font-size="11" font-weight="700" text-anchor="middle">LLM COGNITIVE NODES</text>
+              <text x="20" y="50" fill="#ffffff" font-size="11">3. planner</text>
+              <text x="145" y="50" fill="#ffc46b" font-size="10">$0.000013</text>
+              <text x="20" y="72" fill="#ffffff" font-size="11">4. researcher</text>
+              <text x="145" y="72" fill="#ffc46b" font-size="10">$0.000175</text>
+              <text x="20" y="94" fill="#ffffff" font-size="11">5. summariser</text>
+              <text x="145" y="94" fill="#ffc46b" font-size="10">$0.000069</text>
+            </g>
+
+            <!-- 6. Evidence Collector -->
+            <g transform="translate(280, 385)" filter="url(#shadow)">
+              <rect width="220" height="52" rx="8" fill="url(#gradSuccess)" stroke="#46e39b" stroke-width="2" />
+              <text x="110" y="24" fill="#46e39b" font-size="12" font-weight="700" text-anchor="middle">6. evidence_collector</text>
+              <text x="110" y="40" fill="#94a3b8" font-size="10" text-anchor="middle">Writes run_{id}.json</text>
+            </g>
+
+            <!-- SIDE NODES -->
+            <!-- Killswitch node -->
+            <g transform="translate(40, 100)" filter="url(#shadow)">
+              <rect width="180" height="60" rx="8" fill="url(#gradKill)" stroke="#ff6b6b" stroke-width="1.5" />
+              <text x="90" y="25" fill="#ff6b6b" font-size="11" font-weight="700" text-anchor="middle">KILL SWITCH</text>
+              <text x="90" y="44" fill="#fca5a5" font-size="9.5" text-anchor="middle">Revoke Grant in Auth0</text>
+            </g>
+
+            <!-- Rejection node -->
+            <g transform="translate(40, 200)" filter="url(#shadow)">
+              <rect width="180" height="60" rx="8" fill="url(#gradKill)" stroke="#ff6b6b" stroke-width="1.5" />
+              <text x="90" y="25" fill="#ff6b6b" font-size="11" font-weight="700" text-anchor="middle">REJECTED (HALT)</text>
+              <text x="90" y="44" fill="#fca5a5" font-size="9.5" text-anchor="middle">Emit 0-token Evidence</text>
+            </g>
+
+            <!-- Langfuse Observability Box -->
+            <g transform="translate(560, 100)" filter="url(#shadow)">
+              <rect width="200" height="150" rx="8" fill="#0d1b2a" stroke="#4fd6e0" stroke-width="1.5" />
+              <text x="100" y="26" fill="#4fd6e0" font-size="11" font-weight="700" text-anchor="middle">LANGFUSE OBSERVABILITY</text>
+              <text x="15" y="55" fill="#cbd5e1" font-size="10.5">• Node Latency Spans</text>
+              <text x="15" y="80" fill="#cbd5e1" font-size="10.5">• LLM Input/Output Tokens</text>
+              <text x="15" y="105" fill="#cbd5e1" font-size="10.5">• Cost Accounting ($)</text>
+              <text x="15" y="130" fill="#cbd5e1" font-size="10.5">• Trace Deep Linking</text>
+            </g>
+
+            <!-- Auth0 Logs Box -->
+            <g transform="translate(560, 280)" filter="url(#shadow)">
+              <rect width="200" height="120" rx="8" fill="#141926" stroke="#ff7a59" stroke-width="1.5" />
+              <text x="100" y="26" fill="#ff7a59" font-size="11" font-weight="700" text-anchor="middle">AUTH0 LOGS API</text>
+              <text x="15" y="55" fill="#cbd5e1" font-size="10.5">• Event: seccft (Token Mint)</text>
+              <text x="15" y="78" fill="#cbd5e1" font-size="10.5">• Client ID &amp; Tenant Scope</text>
+              <text x="15" y="101" fill="#cbd5e1" font-size="10.5">• Timestamped Audit Trail</text>
+            </g>
+
+            <!-- CONNECTORS & ARROWS -->
+            <!-- Authenticate to Approval Gate -->
+            <path d="M 390 122 L 390 155" stroke="#4fd6e0" stroke-width="2" />
+            <!-- Approval Gate to LLM Nodes -->
+            <path d="M 390 215 L 390 245" stroke="#46e39b" stroke-width="2" />
+            <text x="396" y="234" fill="#46e39b" font-size="9" font-weight="700">true</text>
+            <!-- LLM Nodes to Evidence Collector -->
+            <path d="M 390 355 L 390 385" stroke="#46e39b" stroke-width="2" />
+
+            <!-- Authenticate to Killswitch -->
+            <path d="M 280 96 L 220 120" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="3 3" />
+            <!-- Approval Gate to Rejected -->
+            <path d="M 280 185 L 220 220" stroke="#ff6b6b" stroke-width="1.5" stroke-dasharray="3 3" />
+            <text x="235" y="195" fill="#ff6b6b" font-size="9" font-weight="700">false</text>
+
+            <!-- Telemetry to Langfuse -->
+            <path d="M 500 300 L 560 210" stroke="#4fd6e0" stroke-width="1.5" stroke-dasharray="3 3" />
+            <!-- Telemetry to Evidence Collector -->
+            <path d="M 660 400 L 660 411 L 500 411" stroke="#46e39b" stroke-width="1.5" stroke-dasharray="3 3" />
+          </svg>
+        </div>
+
+        <h3>Core Zero Trust Principles Applied</h3>
+        <ul>
+          <li>
+            <strong>Approval as Data, Not Code:</strong> Security administrators govern the agent live from the Auth0 dashboard. Toggling <code>security_approved</code> immediately permits or blocks runs without changing a single line of code or restarting a container.
+          </li>
+          <li>
+            <strong>Fail-Closed by Default:</strong> If the metadata flag is false, if the metadata key is missing, or if the IdP Management API is unreachable, execution halts instantly.
+          </li>
+          <li>
+            <strong>Explicit HTTP Boundaries:</strong> The identity layer uses raw <code>httpx</code> requests. There are no opaque SDK layers hiding token refreshes, swallowed exceptions, or unvetted retries.
+          </li>
+          <li>
+            <strong>Unconditional Evidence Generation:</strong> Every run (completed, blocked, kill-switched, or crashed) emits a permanent JSON record. In an enterprise security model, an unlogged failure is an unacceptable blind spot.
+          </li>
+        </ul>
+      </section>
+
+      <!-- SECTION 4: THE APPROVAL GATE IN ACTION -->
+      <section>
+        <h2>The approval gate in action</h2>
+        <p>
+          Let us look at how this behaves in practice. An engineer attempts to trigger an unapproved agent run:
+        </p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot dot-red"></span>
+            <span class="terminal-dot dot-yellow"></span>
+            <span class="terminal-dot dot-green"></span>
+            <span class="terminal-title">bash: python main.py</span>
+          </div>
+          <div class="terminal-body">
+            <span class="t-dim">[auth0] token acquired: type=Bearer expires_in=86400s scope='read:client_grants read:logs read:clients'</span><br>
+            <span class="t-red">╭─────────────────────────── approval gate ───────────────────────────╮</span><br>
+            <span class="t-red">│ BLOCKED                                                             │</span><br>
+            <span class="t-red">│ security_approved = false                                           │</span><br>
+            <span class="t-red">│ Agent is pending approval: set security_approved=true in Auth0       │</span><br>
+            <span class="t-red">│                                                                     │</span><br>
+            <span class="t-red">│ Approve here:                                                       │</span><br>
+            <span class="t-cyan">│ https://manage.auth0.com/dashboard/us/dev-tenant/applications/... │</span><br>
+            <span class="t-red">│ → Application Metadata → security_approved = true                   │</span><br>
+            <span class="t-red">╰─────────────────────────────────────────────────────────────────────╯</span><br>
+            <span class="t-cyan">Evidence file  :</span> evidence/run_097ff8f7.json<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+            &nbsp;&nbsp;AGENT IDENTITY GATEWAY: Run 097ff8f7<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+            &nbsp;&nbsp;Auth0 Identity : dev-26hkl488x5wkdykr.us.auth0.com<br>
+            &nbsp;&nbsp;Client ID      : JMeTKUdhICoe3hHTjG2fudA1QTh9STLj<br>
+            &nbsp;&nbsp;Approved       : <span class="t-red">✗ NO (security_approved=false)</span><br>
+            &nbsp;&nbsp;Outcome        : <span class="t-red">REJECTED</span><br>
+            &nbsp;&nbsp;Total Cost     : $0.0000<br>
+            &nbsp;&nbsp;Evidence File  : evidence/run_097ff8f7.json<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+          </div>
+        </div>
+
+        <p>
+          Notice what happened:
+        </p>
+        <ol>
+          <li>The agent authenticated its identity, but the gate blocked downstream execution before calling any LLM.</li>
+          <li>Zero LLM tokens were consumed ($0.0000 cost).</li>
+          <li>An auditable evidence record was immediately written, giving SecOps full visibility into the rejected attempt.</li>
+        </ol>
+
+        <p>
+          Now, the security admin opens Auth0, inspects the requested scopes, navigates to <strong>Application Metadata</strong>, and sets <code>security_approved = true</code>. Without touching the agent runtime, we re-run:
+        </p>
+
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot dot-red"></span>
+            <span class="terminal-dot dot-yellow"></span>
+            <span class="terminal-dot dot-green"></span>
+            <span class="terminal-title">bash: python main.py --topic "Zero Trust for AI Agents"</span>
+          </div>
+          <div class="terminal-body">
+            <span class="t-dim">[auth0] token acquired: type=Bearer expires_in=86400s scope='read:client_grants read:logs read:clients'</span><br>
+            <span class="t-green">╭─────────────────────────── approval gate ───────────────────────────╮</span><br>
+            <span class="t-green">│ APPROVED: Agent is approved (security_approved=true in Auth0)        │</span><br>
+            <span class="t-green">╰─────────────────────────────────────────────────────────────────────╯</span><br>
+            <span class="t-cyan">Evidence file  :</span> evidence/run_f44a18a9.json<br>
+            <span class="t-cyan">Langfuse trace :</span> https://us.cloud.langfuse.com/trace/f685413b4d3b4bc5a484931005fad66c<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+            &nbsp;&nbsp;AGENT IDENTITY GATEWAY: Run f44a18a9<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+            &nbsp;&nbsp;Auth0 Identity : dev-26hkl488x5wkdykr.us.auth0.com<br>
+            &nbsp;&nbsp;Client ID      : JMeTKUdhICoe3hHTjG2fudA1QTh9STLj<br>
+            &nbsp;&nbsp;Approved       : <span class="t-green">✓ YES (security_approved=true)</span><br>
+            &nbsp;&nbsp;Task           : Zero Trust for AI Agents<br>
+            &nbsp;&nbsp;Outcome        : <span class="t-green">COMPLETED</span><br>
+            &nbsp;&nbsp;Total Cost     : <span class="t-yellow">$0.0003</span><br>
+            &nbsp;&nbsp;Langfuse Trace : https://us.cloud.langfuse.com/trace/f685413b...<br>
+            &nbsp;&nbsp;Evidence File  : evidence/run_f44a18a9.json<br>
+            &nbsp;&nbsp;Killswitch     : NOT FIRED<br>
+            ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━<br>
+            <br>
+            &nbsp;&nbsp;Summary:<br>
+            &nbsp;&nbsp;• Replace static API keys with short-lived machine credentials via SPIFFE/SPIRE.<br>
+            &nbsp;&nbsp;• Enforce dynamic Policy-as-Code and downscoped OAuth token delegation.<br>
+            &nbsp;&nbsp;• Eliminate static secrets and implement continuous behavioral monitoring.
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION 5: VISUAL EVIDENCE RECORD -->
+      <section>
+        <h2>The evidence record: Correlating identity with execution</h2>
+        <p>
+          Blog readers do not need 50 lines of raw JSON curly braces. What matters is the correlation between the enterprise identity log and the cognitive execution trace:
+        </p>
+
+        <!-- VISUAL EVIDENCE CARD DASHBOARD -->
+        <div class="evidence-dashboard">
+          <!-- Card 1: Auth0 Tenant Event -->
+          <div class="evidence-card">
+            <div class="evidence-card-header">
+              <span class="evidence-badge badge-auth0">Layer 1: Identity Event (Auth0 Audit)</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim);">Event Code: seccft</span>
+            </div>
+            <div class="evidence-grid-2col">
+              <div class="evidence-field">
+                <span class="evidence-label">Client Identity</span>
+                <span class="evidence-val">JMeTKUdhICoe3hHTjG2fudA1QTh9STLj</span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Auth0 Domain</span>
+                <span class="evidence-val">dev-26hkl488x5wkdykr.us.auth0.com</span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Granted Scope</span>
+                <span class="evidence-val" style="color: var(--cyan);">read:client_grants read:logs read:clients</span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Audit Timestamp</span>
+                <span class="evidence-val">2026-09-09T05:52:49.760Z</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Langfuse Step Timeline & Costs -->
+          <div class="evidence-card">
+            <div class="evidence-card-header">
+              <span class="evidence-badge badge-langfuse">Layer 2: Execution Spans (Langfuse Trace)</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--amber);">Trace ID: f685413b...</span>
+            </div>
+            <div class="evidence-pipeline-steps">
+              <div class="pipeline-step-row">
+                <div><span class="step-name">1. authenticate</span> <span style="color: var(--text-dim); margin-left: 8px;">Token exchange</span></div>
+                <span style="color: var(--forest);">Verified</span>
+              </div>
+              <div class="pipeline-step-row">
+                <div><span class="step-name">2. approval_gate</span> <span style="color: var(--text-dim); margin-left: 8px;">security_approved == true</span></div>
+                <span style="color: var(--forest);">Approved</span>
+              </div>
+              <div class="pipeline-step-row">
+                <div><span class="step-name">3. planner</span> <span style="color: var(--text-dim); margin-left: 8px;">Gemini 3.7 Flash</span></div>
+                <span class="step-cost">$0.000013</span>
+              </div>
+              <div class="pipeline-step-row">
+                <div><span class="step-name">4. researcher</span> <span style="color: var(--text-dim); margin-left: 8px;">Vertex AI grounding</span></div>
+                <span class="step-cost">$0.000175</span>
+              </div>
+              <div class="pipeline-step-row">
+                <div><span class="step-name">5. summariser</span> <span style="color: var(--text-dim); margin-left: 8px;">Executive condensation</span></div>
+                <span class="step-cost">$0.000069</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Final Bound Verdict -->
+          <div class="evidence-card" style="border-color: rgba(70, 227, 155, 0.4); background: rgba(10, 31, 20, 0.4);">
+            <div class="evidence-card-header">
+              <span class="evidence-badge badge-verdict">Immutable Run Summary</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--forest);">Status: COMPLETED</span>
+            </div>
+            <div class="evidence-grid-2col">
+              <div class="evidence-field">
+                <span class="evidence-label">Total Run Cost</span>
+                <span class="evidence-val" style="color: var(--forest); font-size: 1.1rem;">$0.000256 USD</span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Kill Switch Status</span>
+                <span class="evidence-val" style="color: var(--forest);">NOT FIRED (Normal Traffic)</span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Trace URL</span>
+                <span class="evidence-val"><a href="https://us.cloud.langfuse.com/trace/f685413b4d3b4bc5a484931005fad66c" target="_blank">us.cloud.langfuse.com/trace/f685413b... ↗</a></span>
+              </div>
+              <div class="evidence-field">
+                <span class="evidence-label">Saved Artifact</span>
+                <span class="evidence-val" style="color: var(--cyan);">evidence/run_f44a18a9.json</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          At <code>05:52:49.760Z</code>, Auth0 logged the <code>seccft</code> event for client credentials exchange. Immediately following, Langfuse recorded prompt and completion spans across Gemini 3.7 Flash, totaling exactly <strong>$0.000256</strong>.
+        </p>
+        <p>
+          If an internal auditor reviews this run months later, there is zero guesswork. The Auth0 audit log and the Langfuse execution trace confirm each other.
+        </p>
+      </section>
+
+      <!-- SECTION 6: THE KILL SWITCH -->
+      <section>
+        <h2>The kill switch: Stopping runaway behavior</h2>
+        <p>
+          What happens when an agent starts looping or spamming downstream APIs?
+        </p>
+        <p>
+          In typical setups, rate limits kick in or API bills quietly escalate. With the Agent Identity Gateway, anomalous traffic triggers an automated, identity-level revocation:
+        </p>
+
+        <div class="diagram-container" style="padding: 20px;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 13.5px; color: var(--red); line-height: 1.7;">
+            [1] SUSPICIOUS TRAFFIC DETECTED &gt;&gt; token_request_count &gt; 10 in 60s<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├──► DELETE /api/v2/client-grants/{grant_id}  (Revokes OAuth grant in Auth0)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;├──► PATCH /api/v2/clients/{id} metadata      (Flips security_approved to false)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;│<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;└──► WRITE EVIDENCE &gt;&gt; OUTCOME: KILLSWITCH (Zero further model execution)
+          </div>
+        </div>
+
+        <p>
+          The gateway revokes the agent's OAuth 2.0 client grant via Auth0's Management API and sets <code>security_approved = false</code>. Even if the process remains active in memory, it cannot refresh tokens or access enterprise resources.
+        </p>
+        <p>
+          To protect developer environments, the kill switch defaults to dry-run mode (<code>KILLSWITCH_DRY_RUN=true</code>), identifying the targeted grant without deleting it. Setting <code>KILLSWITCH_DRY_RUN=false</code> arms real grant deletion.
+        </p>
+      </section>
+
+      <!-- SECTION 7: STAKEHOLDER MATRIX -->
+      <section>
+        <h2>What each stakeholder gets</h2>
+        <p>
+          Enterprise governance works when it aligns with the priorities of every team involved:
+        </p>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Stakeholder</th>
+                <th>Core Problem Today</th>
+                <th>What Agent Identity Gateway Delivers</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>CISO &amp; SecOps</strong></td>
+                <td>Ambient API keys proliferating across dev laptops with no ownership or revocation path.</td>
+                <td>Agents as first-class M2M applications in Auth0, with instant approval and revocation from the IdP dashboard.</td>
+              </tr>
+              <tr>
+                <td><strong>AI Platform Engineer</strong></td>
+                <td>Hardcoding custom auth logic, token stores, and fragile rate checks into every agent.</td>
+                <td>A clean LangGraph pipeline contract where authentication and gating reside in separate, testable nodes.</td>
+              </tr>
+              <tr>
+                <td><strong>Compliance &amp; Audit</strong></td>
+                <td>Fragmented terminal logs when answering who authorized an LLM action.</td>
+                <td>A single evidence record per run binding the official Auth0 audit event (<code>seccft</code>) to the Langfuse trace.</td>
+              </tr>
+              <tr>
+                <td><strong>FinOps &amp; Finance</strong></td>
+                <td>Aggregate cloud bills with zero visibility into which team or agent drove costs.</td>
+                <td>Per-run dollar attribution linked directly to the registered M2M client ID ($0.000256 per execution).</td>
+              </tr>
+              <tr>
+                <td><strong>AI Developer</strong></td>
+                <td>Lengthy security reviews because agent architectures are seen as ungoverned black boxes.</td>
+                <td>A compliant blueprint ready on day one. Run <code>python main.py --approve</code> and share the URL with security.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- SECTION 8: ENGINEERING LESSONS -->
+      <section>
+        <h2>Engineering takeaways</h2>
+        <p>
+          Building this reference implementation surfaced three practical engineering realities:
+        </p>
+
+        <h3>1. Avoid heavy SDK abstractions in the security perimeter</h3>
+        <p>
+          When handling identity exchanges, pulling in heavyweight SDKs can introduce opaque token caching, hidden retries, and swallowed exceptions. In <code>auth0/auth.py</code> and <code>auth0/lifecycle.py</code>, we used raw <code>httpx</code> requests. Every header, timeout, and status code remains visible and testable.
+        </p>
+
+        <h3>2. Never log tokens, always log metadata</h3>
+        <p>
+          Developers often leak bearer tokens into console logs when debugging agent failures. Our test suite includes explicit assertions confirming that raw token strings are never written to stdout or evidence files, recording only token types, expiry durations, and granted scopes.
+        </p>
+
+        <h3>3. Failures are first-class evidence</h3>
+        <p>
+          If an agent crashes without writing an audit record, the observability system failed. Our runtime guarantees that whether a run halts at the approval gate, trips the kill switch, or encounters an upstream model error, an evidence record is always written.
+        </p>
+      </section>
+
+      <!-- SECTION 9: CONCLUSION & NEXT STEPS -->
+      <section>
+        <h2>The lesson</h2>
+        <div class="panel callout good">
+          <strong>An agent is not an enterprise citizen because it can call tools. It becomes an enterprise citizen when it holds an identity, obeys live governance gates, and leaves an immutable audit trail of what it did with its authority.</strong>
+        </div>
+
+        <p>
+          The complete code, test suite (14 passing unit tests covering all gates, kill switches, and edge cases), and live evidence files are open source on GitHub.
+        </p>
+
+        <div style="margin-top: 36px;">
+          <a class="button" href="https://github.com/mailtotanvir/Agent-Identity">View on GitHub ↗</a>
+          <a class="button secondary" href="https://github.com/mailtotanvir/Agent-Identity#readme">Read the Technical README</a>
+          <a class="button secondary" href="https://github.com/mailtotanvir/Agent-Identity/blob/main/agent-identity-gateway-spec.md">Read the Full Spec</a>
+        </div>
+      </section>
+    </article>
+
+    <footer>
+      <div class="shell">
+        <p>
+          Authored by <strong>Tanvir</strong> • Researching and building enterprise-grade agentic architectures, governance planes, and AI assurance layers.
+        </p>
+        <p style="margin-top: 8px;">
+          Explore more publications on <a href="https://mailtotanvir.github.io/">mailtotanvir.github.io</a> • Source code released under MIT License.
+        </p>
+      </div>
+    </footer>
+  </div>
+</body>
+</html>
